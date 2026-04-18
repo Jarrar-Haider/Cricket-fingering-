@@ -53,7 +53,6 @@
 
     <audio id="bg-music" loop src="https://codeskulptor-demos.commondatastorage.googleapis.com/pang/pman_ow.mp3"></audio>
     <audio id="out-sfx" src="https://codeskulptor-demos.commondatastorage.googleapis.com/descent/Crumble%20Sound.mp3"></audio>
-    <audio id="money-sfx" src="https://codeskulptor-demos.commondatastorage.googleapis.com/descent/GotItem.mp3"></audio>
 
     <div id="loading-screen">
         <div class="text-center px-6">
@@ -74,40 +73,20 @@
         </div>
     </div>
 
-    <div id="feedback-input-modal" class="hidden fixed inset-0 bg-black/95 z-[800] flex items-center justify-center p-6">
-        <div class="bg-gray-900 border-2 border-orange-500 p-8 rounded-3xl text-center w-full max-w-sm">
-            <h2 class="text-white font-bold mb-4 uppercase text-xs tracking-widest">Please add a feedback...</h2>
-            <textarea id="feedback-text" class="bg-black border border-gray-700 p-4 rounded-xl w-full text-white mb-4 h-24 focus:border-orange-500 outline-none" placeholder="Write here..."></textarea>
-            <button onclick="submitFeedback()" class="bg-orange-600 w-full py-3 rounded-xl font-bold text-white uppercase">Submit</button>
-        </div>
-    </div>
-
-    <div id="feedback-final-modal" class="hidden fixed inset-0 bg-black/98 z-[900] flex items-center justify-center p-6">
-        <div class="bg-gray-900 border-2 border-yellow-500 p-10 rounded-3xl text-center w-full max-w-sm">
-            <p class="text-white font-black text-lg leading-relaxed italic">"Ab isko ghuma k apni bund m dal do"</p>
-            <button onclick="document.getElementById('feedback-final-modal').classList.add('hidden')" class="mt-8 bg-yellow-500 px-8 py-2 rounded-full font-black text-black uppercase text-xs">Thik Hai</button>
-        </div>
-    </div>
-
     <div class="front-ui">
         <div class="p-4 flex justify-between items-start interactive">
             <div class="bg-black/90 p-3 rounded-xl border-2 border-orange-500">
                 <p id="display-team-name" class="text-orange-400 text-[10px] font-black uppercase">TEAM</p>
                 <h2 id="user-score-ui" class="text-4xl font-black text-white leading-none">0</h2>
             </div>
-            <div class="flex flex-col gap-3">
-                <button onclick="toggleMusic()" class="bg-black/90 p-3 rounded-full border border-white/20 shadow-xl">
-                    <span id="music-icon" class="text-xl">🔊</span>
-                </button>
-                <button onclick="openFeedbackInput()" class="bg-black/90 p-3 rounded-full border border-white/20 shadow-xl">
-                    <span class="text-xl">💬</span>
-                </button>
-            </div>
+            <button onclick="toggleMusic()" class="bg-black/90 p-3 rounded-full border border-white/20 shadow-xl">
+                <span id="music-icon" class="text-xl">🔊</span>
+            </button>
         </div>
 
         <div id="ball" class="ball"></div>
 
-        <div class="flex-1 flex flex-col items-center justify-between pb-8">
+        <div class="flex-1 flex flex-col items-center justify-between pb-12">
             <div class="mt-2 text-center">
                 <div class="bg-black/90 p-5 rounded-3xl border-2 border-red-600 shadow-xl">
                     <div id="cpu-hand" class="text-6xl">😈</div>
@@ -119,15 +98,15 @@
                 <p id="game-info" class="font-black text-lg text-orange-400 italic uppercase">Waiting for Toss...</p>
             </div>
 
-            <div class="w-full max-w-sm px-4 interactive">
+            <div class="w-full max-w-sm px-4 mb-8 interactive">
                 <div id="toss-area" class="flex gap-4 justify-center">
-                    <button onclick="runToss('Heads')" class="bg-orange-600 px-8 py-4 rounded-full font-black text-white">HEADS</button>
-                    <button onclick="runToss('Tails')" class="bg-white px-8 py-4 rounded-full font-black text-black">TAILS</button>
+                    <button onclick="runToss('Heads')" class="bg-orange-600 px-8 py-4 rounded-full font-black text-white shadow-lg">HEADS</button>
+                    <button onclick="runToss('Tails')" class="bg-white px-8 py-4 rounded-full font-black text-black shadow-lg">TAILS</button>
                 </div>
                 <div id="batting-area" class="hidden grid grid-cols-5 gap-2"></div>
                 <div id="rematch-area" class="hidden text-center">
                     <h1 id="winner-text" class="text-4xl font-black text-white mb-6 italic"></h1>
-                    <button onclick="location.reload()" class="bg-orange-600 px-12 py-4 rounded-full font-black text-white shadow-lg">REMATCH</button>
+                    <button onclick="location.reload()" class="bg-orange-600 px-12 py-4 rounded-full font-black text-white">REMATCH</button>
                 </div>
             </div>
         </div>
@@ -150,9 +129,9 @@
         ];
 
         let state = { team: "", uScore: 0, cScore: 0, target: Infinity, isBatting: null, isMusic: true };
-        const aud = { bg: document.getElementById('bg-music'), out: document.getElementById('out-sfx'), money: document.getElementById('money-sfx') };
+        const aud = { bg: document.getElementById('bg-music'), out: document.getElementById('out-sfx') };
 
-        // 50% Volume for Music
+        // Set Intense Music to 50% Volume
         aud.bg.volume = 0.5;
 
         window.onload = () => {
@@ -176,17 +155,6 @@
                 document.getElementById('display-team-name').innerText = state.team;
                 document.getElementById('name-modal').classList.add('hidden');
             }
-        }
-
-        function openFeedbackInput() {
-            document.getElementById('feedback-input-modal').classList.remove('hidden');
-        }
-
-        function submitFeedback() {
-            document.getElementById('feedback-input-modal').classList.add('hidden');
-            if(state.isMusic) { aud.money.currentTime = 0; aud.money.play(); }
-            document.getElementById('feedback-final-modal').classList.remove('hidden');
-            document.getElementById('feedback-text').value = ""; // Clear for next time
         }
 
         function toggleMusic() {
@@ -268,5 +236,4 @@
         }
     </script>
 </body>
-    </html>
-    
+</html>
