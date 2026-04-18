@@ -8,222 +8,413 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Bungee&family=Inter:wght@400;700&display=swap');
         
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #2d5a27; /* Fallback */
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        .pitch-bg {
-            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), 
-                        url('https://img.freepik.com/free-vector/flat-design-cricket-stadium-illustration_23-2149174094.jpg');
-            background-size: cover;
-            background-position: center;
-        }
-
-        .title-font { font-family: 'Bungee', cursive; }
+        body { font-family: 'Inter', sans-serif; background: #2d5a27; height: 100vh; overflow: hidden; margin: 0; }
         
-        .hand-btn {
-            transition: transform 0.2s;
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(5px);
-        }
-        
-        .hand-btn:hover { transform: scale(1.1); background: rgba(255, 255, 255, 0.4); }
-
+        /* Loading Screen Styling */
         #loading-screen {
-            position: fixed;
-            inset: 0;
-            background: #1a1a1a;
-            z-index: 100;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: white;
+            position: fixed; inset: 0; background: #1a1a1a; z-index: 100;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
-
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-        }
-
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #f97316; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-top: 2rem; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Text Gradient Styling */
+        .gradient-title {
+            background: linear-gradient(135deg, #fb923c, #c2410c); /* Orange Gradient */
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            font-family: 'Bungee', cursive;
+        }
+        .gradient-subtitle {
+            background: linear-gradient(135deg, #ffffff, #e0e0e0); /* White Gradient */
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        /* Pitch Background and Dividers */
+        .cartoon-pitch {
+            background: #6ab04c;
+            position: relative; overflow: hidden;
+        }
+        .pitch-center {
+            position: absolute; width: 40%; height: 100%; top: 0; left: 30%;
+            background: #d4ac7d;
+            box-shadow: 10px 0px 30px rgba(0,0,0,0.1), -10px 0px 30px rgba(0,0,0,0.1);
+        }
+        .pitch-lines {
+            position: absolute; width: 40%; height: 100%; top: 0; left: 30%;
+            border-left: 4px solid rgba(255,255,255,0.3); border-right: 4px solid rgba(255,255,255,0.3);
+        }
+        .screen-divider {
+            position: absolute; top: 50%; left: 0; width: 100%; height: 8px;
+            background: linear-gradient(to right, rgba(255,255,255,0) 10%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0) 90%);
+            transform: translateY(-50%);
+        }
+
+        /* Hand Button Styling */
+        .hand-btn { transition: all 0.2s; background: rgba(255, 255, 255, 0.2); }
+        .hand-btn:hover { transform: scale(1.05); background: rgba(255, 255, 255, 0.5); }
+        .active-move { border-color: #fb923c !important; transform: scale(1.1); box-shadow: 0 0 15px rgba(251,146,60,0.7); }
+
+        /* Animation: Ball Trajectory */
+        .ball {
+            position: absolute; width: 30px; height: 30px; background: red; border-radius: 50%;
+            opacity: 0; transition: all 0.5s ease-out;
+            bottom: 60%; left: 45%; /* Origin */
+        }
+        @keyframes flatBall { 
+            0% { transform: translate(0,0) scale(1); opacity: 1; } 
+            100% { transform: translate(150px, -50px) scale(0.6); opacity: 0; }
+        }
+        @keyframes highBall6 { 
+            0% { transform: translate(0,0) scale(1); opacity: 1; } 
+            50% { transform: translate(100px, -150px) scale(1.3); } 
+            100% { transform: translate(200px, -100px) scale(0.6); opacity: 0; }
+        }
+        @keyframes superBall6Plus { 
+            0% { transform: translate(0,0) scale(1); opacity: 1; } 
+            50% { transform: translate(80px, -200px) scale(1.5); } 
+            100% { transform: translate(160px, -150px) scale(0.6); opacity: 0; }
+        }
     </style>
 </head>
-<body class="pitch-bg text-white flex flex-col items-center">
+<body class="flex flex-col text-white">
 
     <div id="loading-screen">
-        <div class="loader mb-4"></div>
-        <h1 class="title-font text-2xl">Preparing Pitch...</h1>
+        <div class="text-center">
+            <h1 class="gradient-title text-5xl">Cricket Fingering</h1>
+            <p class="gradient-subtitle text-xl font-bold">by Jarrar</p>
+        </div>
+        <div class="loader"></div>
     </div>
 
-    <div class="w-full bg-black/60 p-4 flex justify-between items-center border-b-2 border-yellow-500">
-        <div class="text-left">
-            <h1 class="title-font text-2xl text-yellow-400">Cricket Fingering</h1>
-            <p class="text-sm tracking-widest opacity-80 uppercase">by Jarrar</p>
-        </div>
-        <div class="text-right">
-            <p id="game-status" class="text-lg font-bold text-green-400 italic">Toss Time!</p>
-            <p id="scoreboard" class="text-3xl font-black">Score: 0</p>
-        </div>
-    </div>
+    <div class="flex-1 flex flex-col h-full cartoon-pitch">
+        <div class="pitch-center"></div>
+        <div class="pitch-lines"></div>
 
-    <main class="flex-1 flex flex-col items-center justify-center w-full max-w-4xl p-6">
-        
-        <div id="action-area" class="bg-black/40 rounded-3xl p-8 w-full text-center backdrop-blur-md border border-white/20">
+        <div class="flex-1 border-b-2 border-white/20 p-6 flex flex-col justify-between items-center text-center relative z-10">
+            <div id="cpu-score-area">
+                <p class="text-xs uppercase opacity-70 tracking-widest mb-1">CPU Score</p>
+                <h1 class="title-font text-5xl font-black gradient-subtitle" id="scoreboard">0</h1>
+                <p id="target-display" class="text-xl font-bold italic text-yellow-300 mt-2 hidden"></p>
+            </div>
             
-            <div id="toss-view">
-                <h2 class="text-3xl mb-6 title-font">Heads or Tails?</h2>
+            <div id="toss-status-box" class="bg-black/60 p-3 rounded-full border border-orange-500/50">
+                <p class="text-xs font-bold uppercase tracking-widest text-orange-400">Toss Time!</p>
+                <p id="toss-result-text" class="text-md font-bold text-white"></p>
+            </div>
+
+            <div id="cpu-move-display" class="bg-white/10 p-4 rounded-xl text-center hidden">
+                <p class="text-xs uppercase opacity-60">CPU Chose:</p>
+                <div id="cpu-move-img" class="text-5xl mt-2">🤖</div>
+            </div>
+        </div>
+
+        <div class="screen-divider"></div>
+
+        <div class="flex-1 p-6 flex flex-col justify-end items-center relative z-10">
+            
+            <div id="toss-view" class="mb-10 text-center">
+                <h2 class="text-3xl mb-6 gradient-title text-5xl">Heads or Tails?</h2>
                 <div class="flex gap-4 justify-center">
-                    <button onclick="playToss('Heads')" class="bg-yellow-500 hover:bg-yellow-400 px-8 py-3 rounded-full font-bold text-black">HEADS</button>
+                    <button onclick="playToss('Heads')" class="bg-orange-500 hover:bg-orange-400 px-8 py-3 rounded-full font-bold text-black transform scale-110">HEADS</button>
                     <button onclick="playToss('Tails')" class="bg-gray-300 hover:bg-white px-8 py-3 rounded-full font-bold text-black">TAILS</button>
                 </div>
             </div>
 
-            <div id="choice-view" class="hidden">
-                <h2 id="turn-instruction" class="text-2xl mb-4 font-bold">Choose your Move:</h2>
-                <div class="grid grid-cols-5 gap-3" id="hand-options">
+            <div id="game-view" class="hidden w-full max-w-lg flex flex-col items-center gap-6">
+                <div id="user-move-display" class="bg-white/20 p-4 rounded-xl text-center hidden mb-2 w-full">
+                    <p class="text-xs uppercase opacity-60">You Chose:</p>
+                    <div id="user-move-img" class="text-5xl mt-2">?</div>
+                </div>
+
+                <div class="grid grid-cols-5 gap-3 w-full" id="hand-options">
                     </div>
                 
-                <div class="mt-8 flex justify-around items-center bg-white/10 p-4 rounded-xl">
-                    <div>
-                        <p class="text-xs uppercase opacity-60">You</p>
-                        <div id="user-move-img" class="text-5xl mt-2">?</div>
-                    </div>
-                    <div class="text-4xl font-bold italic text-red-500">VS</div>
-                    <div>
-                        <p class="text-xs uppercase opacity-60">Computer</p>
-                        <div id="cpu-move-img" class="text-5xl mt-2">?</div>
-                    </div>
-                </div>
+                <p id="instruction-text" class="text-xl font-bold text-center mt-2">Select a Move to start Batting!</p>
             </div>
         </div>
-    </main>
 
-    <audio id="bg-music" loop>
-        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
-    </audio>
+        <div id="game-ball" class="ball"></div>
+    </div>
+
+    <div id="out-modal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-6">
+        <div class="bg-[#1a1a1a] p-10 rounded-3xl border-4 border-red-600 text-center w-full max-w-sm">
+            <h1 class="text-8xl font-black text-red-500 mb-6">OUT!</h1>
+            <p class="text-xl text-white/80 mb-8">CPU matched your move. Switching sides.</p>
+            <button onclick="handleNextInnings()" class="bg-red-600 px-10 py-3 rounded-full font-bold text-white text-xl">Continue</button>
+        </div>
+    </div>
+
+    <audio id="bg-music" loop><source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3" type="audio/mpeg"></audio>
+    <audio id="out-sound"><source src="https://assets.mixkit.co/active_storage/sfx/2972/2972-preview.mp3" type="audio/mpeg"></audio>
+    <audio id="crowd-sound"><source src="https://assets.mixkit.co/active_storage/sfx/991/991-preview.mp3" type="audio/mpeg"></audio>
 
     <script>
-        const loading = document.getElementById('loading-screen');
-        const music = document.getElementById('bg-music');
-        
-        // Hide loader after 2.5s
-        setTimeout(() => {
-            loading.style.display = 'none';
-            music.play().catch(e => console.log("Music needs interaction"));
-        }, 2500);
-
-        const moves = [
-            { val: 1, img: "☝️" }, { val: 2, img: "✌️" }, { val: 3, img: "🤟" },
-            { val: 4, img: "🖖" }, { val: 5, img: "🖐️" }, { val: 6, img: "👍" },
-            { val: 10, img: "✊" }, { val: 20, img: "👎" }, { val: 50, img: "🤙" },
-            { val: 100, img: "☝🏻👍" } 
+        // --- CONSTANTS & DATA ---
+        const MOVES = [
+            { val: 1, img: "☝️", risk: 1 }, { val: 2, img: "✌️", risk: 1.2 }, 
+            { val: 3, img: "🤟", risk: 1.4 }, { val: 4, img: "🖖", risk: 1.6 }, 
+            { val: 5, img: "🖐️", risk: 2 }, { val: 6, img: "👍", risk: 3 }, 
+            { val: 10, img: "✊", risk: 4 }, { val: 20, img: "👎", risk: 5 }, 
+            { val: 50, img: "🤙", risk: 6 }, { val: 100, img: "☝🏻👍", risk: 8 } 
         ];
 
-        let userScore = 0;
-        let cpuScore = 0;
-        let isUserBatting = true;
-        let target = Infinity;
-        let isGameOver = false;
+        // --- GAME STATE ---
+        let state = {
+            loading: true,
+            userScore: 0,
+            cpuScore: 0,
+            isUserBatting: null, // Set after toss
+            target: Infinity,
+            isGameOver: false,
+            currentToss: null,
+            userActiveMoveVal: null
+        };
 
-        function playToss(choice) {
-            const result = Math.random() < 0.5 ? 'Heads' : 'Tails';
-            const won = choice === result;
+        // --- DOM ELEMENTS ---
+        const el = {
+            loading: document.getElementById('loading-screen'),
+            tossView: document.getElementById('toss-view'),
+            gameView: document.getElementById('game-view'),
+            tossStatus: document.getElementById('toss-status-box'),
+            tossText: document.getElementById('toss-result-text'),
+            scoreboard: document.getElementById('scoreboard'),
+            target: document.getElementById('target-display'),
+            movesGrid: document.getElementById('hand-options'),
+            instruction: document.getElementById('instruction-text'),
+            ball: document.getElementById('game-ball'),
+            outModal: document.getElementById('out-modal'),
+            cpuMoveDiv: document.getElementById('cpu-move-display'),
+            cpuMoveImg: document.getElementById('cpu-move-img'),
+            userMoveDiv: document.getElementById('user-move-display'),
+            userMoveImg: document.getElementById('user-move-img')
+        };
+
+        const audio = {
+            music: document.getElementById('bg-music'),
+            out: document.getElementById('out-sound'),
+            crowd: document.getElementById('crowd-sound')
+        };
+
+        // --- INITIALIZATION ---
+        // Load the moves grid immediately
+        MOVES.forEach(m => {
+            const btn = document.createElement('button');
+            btn.className = "hand-btn p-3 rounded-2xl border-4 border-white/10 text-center flex flex-col items-center justify-center";
+            btn.id = `btn-${m.val}`;
+            btn.onclick = () => selectMove(m.val);
+            btn.innerHTML = `<span class="text-4xl block">${m.img}</span><span class="text-sm font-black mt-1 text-white/70">${m.val}</span>`;
+            el.movesGrid.appendChild(btn);
+        });
+
+        // Hide loader after a delay
+        setTimeout(() => {
+            state.loading = false;
+            el.loading.style.display = 'none';
+            // Start music (requires interaction, will play after first click)
+            audio.music.play().catch(e => console.log("Music blocked by browser until interaction"));
+        }, 3000); // 3-second delay
+
+        // --- TOSS & STARTUP LOGIC ---
+        function playToss(userChoice) {
+            el.tossView.classList.add('hidden');
+            const tossWins = Math.random() < 0.5;
+            state.currentToss = tossWins ? 'User' : 'CPU';
+
+            if (tossWins) {
+                // User wins, show manual selection
+                el.tossText.innerHTML = `<span class="text-green-400">YOU WON!</span> Decide your strategy below.`;
+                showTossSelectionButtons();
+            } else {
+                // CPU wins, automated selection
+                const cpuDecidesBat = Math.random() < 0.5;
+                state.isUserBatting = !cpuDecidesBat;
+                el.tossText.innerHTML = `<span class="text-red-400">CPU WON!</span> It decided to <span class="font-black text-yellow-300">${cpuDecidesBat ? 'BAT' : 'BOWL'}</span> first.`;
+                initializeGameView();
+            }
+        }
+
+        function showTossSelectionButtons() {
+            // Replace move grid temporarily with decision buttons
+            el.gameView.classList.remove('hidden');
+            el.movesGrid.classList.add('hidden');
+            el.instruction.innerText = "Congratulations! Choose your goal:";
             
-            document.getElementById('toss-view').innerHTML = `
-                <h2 class="text-2xl mb-4 title-font">${result}! You ${won ? 'Won' : 'Lost'} the Toss</h2>
-                <div class="flex gap-4 justify-center">
-                    ${won ? 
-                        `<button onclick="startGame(true)" class="bg-green-500 p-4 rounded-lg">Bat First</button>
-                         <button onclick="startGame(false)" class="bg-blue-500 p-4 rounded-lg">Bowl First</button>` :
-                        `<button onclick="startGame(${Math.random() < 0.5})" class="bg-red-500 p-4 rounded-lg">Continue</button>`
-                    }
+            const btnClass = "bg-orange-500 text-black px-10 py-3 rounded-full font-bold text-lg w-full mb-4";
+            el.movesGrid.parentNode.insertAdjacentHTML('beforeend', `
+                <div id="temp-toss-choices" class="flex flex-col gap-2 w-full mt-4">
+                    <button onclick="startGame(true)" class="${btnClass}">BAT FIRST</button>
+                    <button onclick="startGame(false)" class="${btnClass} bg-gray-300">BOWL FIRST</button>
                 </div>
-            `;
+            `);
         }
 
-        function startGame(userBatting) {
-            isUserBatting = userBatting;
-            document.getElementById('toss-view').classList.add('hidden');
-            document.getElementById('choice-view').classList.remove('hidden');
-            setupOptions();
-            updateDisplay();
+        function startGame(userBattingFirst) {
+            state.isUserBatting = userBattingFirst;
+            // Remove temp buttons and restore grid
+            document.getElementById('temp-toss-choices').remove();
+            initializeGameView();
         }
 
-        function setupOptions() {
-            const container = document.getElementById('hand-options');
-            container.innerHTML = moves.map(m => `
-                <button onclick="playTurn(${m.val})" class="hand-btn p-2 rounded-xl border border-white/10 hover:border-yellow-400">
-                    <span class="text-3xl block">${m.img}</span>
-                    <span class="text-xs font-bold">${m.val}</span>
-                </button>
-            `).join('');
+        function initializeGameView() {
+            el.gameView.classList.remove('hidden');
+            el.movesGrid.classList.remove('hidden');
+            updateScores();
         }
 
-        function playTurn(userMove) {
-            if (isGameOver) return;
-
-            const cpuMoveObj = moves[Math.floor(Math.random() * moves.length)];
-            const cpuMove = cpuMoveObj.val;
+        // --- GAME PLAY LOGIC ---
+        function selectMove(value) {
+            if (state.isGameOver) return;
+            state.userActiveMoveVal = value;
             
-            document.getElementById('user-move-img').innerText = moves.find(m => m.val === userMove).img;
-            document.getElementById('cpu-move-img').innerText = cpuMoveObj.img;
+            // Highlight chosen move
+            const btns = el.movesGrid.querySelectorAll('button');
+            btns.forEach(b => b.classList.remove('active-move'));
+            document.getElementById(`btn-${value}`).classList.add('active-move');
 
-            if (userMove === cpuMove) {
+            el.instruction.innerText = `You selected ${value}. Computer is thinking...`;
+            
+            // Short delay to simulate AI thought
+            setTimeout(() => playTurn(value), 500);
+        }
+
+        function playTurn(userMoveVal) {
+            // Find user data
+            const userMoveObj = MOVES.find(m => m.val === userMoveVal);
+            
+            // Risk-based CPU choice logic:
+            // Calculate chance (weighted by score risk) that CPU also picks this move.
+            const baseChanceOfMatching = 0.05; // 5% baseline
+            const riskWeight = userMoveObj.risk;
+            const matchProbability = baseChanceOfMatching * riskWeight;
+
+            let cpuMoveObj;
+            if (Math.random() < matchProbability) {
+                // CPU matches the user choice! (Out!)
+                cpuMoveObj = userMoveObj;
+            } else {
+                // CPU makes a random choice (unweighted)
+                cpuMoveObj = MOVES[Math.floor(Math.random() * MOVES.length)];
+            }
+
+            const cpuMoveVal = cpuMoveObj.val;
+
+            // Update UI with both choices
+            updateMoveDisplays(userMoveObj, cpuMoveObj);
+
+            // Calculate scoring/out logic
+            if (userMoveVal === cpuMoveVal) {
                 handleOut();
             } else {
-                if (isUserBatting) {
-                    userScore += userMove;
-                    if (userScore > target) endGame();
-                } else {
-                    cpuScore += cpuMove;
-                    if (cpuScore > target) endGame();
-                }
+                let runsToAdd = state.isUserBatting ? userMoveVal : cpuMoveVal;
+                processRuns(runsToAdd);
             }
-            updateDisplay();
+        }
+
+        function updateMoveDisplays(userMoveObj, cpuMoveObj) {
+            el.cpuMoveDiv.classList.remove('hidden');
+            el.userMoveDiv.classList.remove('hidden');
+            el.cpuMoveImg.innerText = cpuMoveObj.img;
+            el.userMoveImg.innerText = userMoveObj.img;
+        }
+
+        function processRuns(runs) {
+            // Update score
+            if (state.isUserBatting) state.userScore += runs;
+            else state.cpuScore += runs;
+            
+            updateScores();
+            
+            // Check for specific visual/audio triggers
+            if (runs >= 6) {
+                audio.crowd.play(); // Play crowd cheer
+            }
+
+            // Animate Ball based on score
+            animateBall(runs);
+
+            // Win condition check (target reached)
+            if (state.target !== Infinity) {
+                if (state.isUserBatting && state.userScore > state.target) endGame();
+                else if (!state.isUserBatting && state.cpuScore > state.target) endGame();
+            }
         }
 
         function handleOut() {
-            alert("OUT!");
-            if (target === Infinity) {
-                target = isUserBatting ? userScore : cpuScore;
-                isUserBatting = !isUserBatting;
-                alert(`Target set: ${target + 1}. Switch sides!`);
+            audio.out.play(); // Play error buzz
+            el.outModal.classList.remove('hidden');
+        }
+
+        function handleNextInnings() {
+            el.outModal.classList.add('hidden');
+            el.cpuMoveDiv.classList.add('hidden');
+            el.userMoveDiv.classList.add('hidden');
+            state.userActiveMoveVal = null;
+            // Clear highlighting
+            el.movesGrid.querySelectorAll('button').forEach(b => b.classList.remove('active-move'));
+
+            // Set Target if 1st innings finished
+            if (state.target === Infinity) {
+                state.target = state.isUserBatting ? state.userScore : state.cpuScore;
+                state.isUserBatting = !state.isUserBatting; // Switch role
+
+                // 2nd innings start logic
+                updateScores(); // Display target
+                el.tossText.innerHTML = `Switching sides! New Target: <span class="text-orange-400 font-black">${state.target + 1}</span>`;
+                el.instruction.innerText = state.isUserBatting ? "Your turn to Chase. Select a Move!" : "Your turn to Bowl. Stop the Chase!";
             } else {
+                // Game Over after 2nd innings
                 endGame();
             }
         }
 
-        function updateDisplay() {
-            const currentScore = isUserBatting ? userScore : cpuScore;
-            document.getElementById('scoreboard').innerText = `Score: ${currentScore}`;
-            document.getElementById('game-status').innerText = isUserBatting ? "YOU ARE BATTING" : "CPU IS BATTING";
-            if (target !== Infinity) {
-                document.getElementById('turn-instruction').innerText = `Target: ${target + 1}`;
+        // --- UI VISUAL UTILITIES ---
+        function updateScores() {
+            let currentScore = state.isUserBatting ? state.userScore : state.cpuScore;
+            let currentInningsName = state.isUserBatting ? "USER BATTING" : "CPU BATTING";
+            
+            el.scoreboard.innerText = currentScore;
+            el.instruction.innerText = `${currentInningsName}. Next Move?`;
+
+            if (state.target !== Infinity) {
+                el.target.innerText = `Target: ${state.target + 1}`;
+                el.target.classList.remove('hidden');
             }
         }
 
+        function animateBall(runs) {
+            // Determine animation type
+            let animationName;
+            if (runs < 6) animationName = 'flatBall 0.5s ease-out';
+            else if (runs === 6) animationName = 'highBall 0.7s ease-out';
+            else animationName = 'superBall6Plus 0.9s ease-out';
+
+            // Reset and fire ball
+            el.ball.style.animation = 'none';
+            void el.ball.offsetWidth; // Force reflow
+            el.ball.style.animation = animationName;
+        }
+
+        // --- END GAME logic ---
         function endGame() {
-            isGameOver = true;
-            let msg = "";
-            if (userScore > cpuScore) msg = "YOU WIN!";
-            else if (cpuScore > userScore) msg = "CPU WINS!";
-            else msg = "IT'S A TIE!";
-            
-            document.getElementById('action-area').innerHTML = `
-                <h1 class="text-5xl title-font mb-4">${msg}</h1>
-                <p class="mb-6">Final Score - You: ${userScore} | CPU: ${cpuScore}</p>
-                <button onclick="location.reload()" class="bg-yellow-500 text-black px-10 py-4 rounded-full font-bold">REPLAY</button>
+            state.isGameOver = true;
+            el.gameView.classList.add('hidden');
+            el.tossStatus.classList.add('hidden');
+
+            let message;
+            let finalUser = state.userScore;
+            let finalCpu = state.cpuScore;
+
+            if (state.userScore > state.cpuScore) message = "YOU WIN! 🎉";
+            else if (state.cpuScore > state.userScore) message = "CPU WINS! 💻";
+            else message = "IT'S A TIE! ⚖️";
+
+            // Overwrite Upper Half with End Result view
+            document.getElementById('cpu-score-area').innerHTML = `
+                <h1 class="text-8xl font-black title-font gradient-title mb-4">${message}</h1>
+                <p class="text-2xl gradient-subtitle">Final Score - You: ${finalUser} | CPU: ${finalCpu}</p>
+                <button onclick="location.reload()" class="bg-yellow-400 text-black px-12 py-4 rounded-full font-bold mt-10 text-xl transform scale-110">REPLAY MATCH</button>
             `;
         }
     </script>
 </body>
-  </html>
-  
+</html>
