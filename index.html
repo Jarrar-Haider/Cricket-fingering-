@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cricket Fingering by Jarrar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bungee&family=Inter:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #2d5a27; /* Fallback */
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .pitch-bg {
+            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), 
+                        url('https://img.freepik.com/free-vector/flat-design-cricket-stadium-illustration_23-2149174094.jpg');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .title-font { font-family: 'Bungee', cursive; }
+        
+        .hand-btn {
+            transition: transform 0.2s;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+        }
+        
+        .hand-btn:hover { transform: scale(1.1); background: rgba(255, 255, 255, 0.4); }
+
+        #loading-screen {
+            position: fixed;
+            inset: 0;
+            background: #1a1a1a;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="pitch-bg text-white flex flex-col items-center">
+
+    <div id="loading-screen">
+        <div class="loader mb-4"></div>
+        <h1 class="title-font text-2xl">Preparing Pitch...</h1>
+    </div>
+
+    <div class="w-full bg-black/60 p-4 flex justify-between items-center border-b-2 border-yellow-500">
+        <div class="text-left">
+            <h1 class="title-font text-2xl text-yellow-400">Cricket Fingering</h1>
+            <p class="text-sm tracking-widest opacity-80 uppercase">by Jarrar</p>
+        </div>
+        <div class="text-right">
+            <p id="game-status" class="text-lg font-bold text-green-400 italic">Toss Time!</p>
+            <p id="scoreboard" class="text-3xl font-black">Score: 0</p>
+        </div>
+    </div>
+
+    <main class="flex-1 flex flex-col items-center justify-center w-full max-w-4xl p-6">
+        
+        <div id="action-area" class="bg-black/40 rounded-3xl p-8 w-full text-center backdrop-blur-md border border-white/20">
+            
+            <div id="toss-view">
+                <h2 class="text-3xl mb-6 title-font">Heads or Tails?</h2>
+                <div class="flex gap-4 justify-center">
+                    <button onclick="playToss('Heads')" class="bg-yellow-500 hover:bg-yellow-400 px-8 py-3 rounded-full font-bold text-black">HEADS</button>
+                    <button onclick="playToss('Tails')" class="bg-gray-300 hover:bg-white px-8 py-3 rounded-full font-bold text-black">TAILS</button>
+                </div>
+            </div>
+
+            <div id="choice-view" class="hidden">
+                <h2 id="turn-instruction" class="text-2xl mb-4 font-bold">Choose your Move:</h2>
+                <div class="grid grid-cols-5 gap-3" id="hand-options">
+                    </div>
+                
+                <div class="mt-8 flex justify-around items-center bg-white/10 p-4 rounded-xl">
+                    <div>
+                        <p class="text-xs uppercase opacity-60">You</p>
+                        <div id="user-move-img" class="text-5xl mt-2">?</div>
+                    </div>
+                    <div class="text-4xl font-bold italic text-red-500">VS</div>
+                    <div>
+                        <p class="text-xs uppercase opacity-60">Computer</p>
+                        <div id="cpu-move-img" class="text-5xl mt-2">?</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <audio id="bg-music" loop>
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        const loading = document.getElementById('loading-screen');
+        const music = document.getElementById('bg-music');
+        
+        // Hide loader after 2.5s
+        setTimeout(() => {
+            loading.style.display = 'none';
+            music.play().catch(e => console.log("Music needs interaction"));
+        }, 2500);
+
+        const moves = [
+            { val: 1, img: "☝️" }, { val: 2, img: "✌️" }, { val: 3, img: "🤟" },
+            { val: 4, img: "🖖" }, { val: 5, img: "🖐️" }, { val: 6, img: "👍" },
+            { val: 10, img: "✊" }, { val: 20, img: "👎" }, { val: 50, img: "🤙" },
+            { val: 100, img: "☝🏻👍" } 
+        ];
+
+        let userScore = 0;
+        let cpuScore = 0;
+        let isUserBatting = true;
+        let target = Infinity;
+        let isGameOver = false;
+
+        function playToss(choice) {
+            const result = Math.random() < 0.5 ? 'Heads' : 'Tails';
+            const won = choice === result;
+            
+            document.getElementById('toss-view').innerHTML = `
+                <h2 class="text-2xl mb-4 title-font">${result}! You ${won ? 'Won' : 'Lost'} the Toss</h2>
+                <div class="flex gap-4 justify-center">
+                    ${won ? 
+                        `<button onclick="startGame(true)" class="bg-green-500 p-4 rounded-lg">Bat First</button>
+                         <button onclick="startGame(false)" class="bg-blue-500 p-4 rounded-lg">Bowl First</button>` :
+                        `<button onclick="startGame(${Math.random() < 0.5})" class="bg-red-500 p-4 rounded-lg">Continue</button>`
+                    }
+                </div>
+            `;
+        }
+
+        function startGame(userBatting) {
+            isUserBatting = userBatting;
+            document.getElementById('toss-view').classList.add('hidden');
+            document.getElementById('choice-view').classList.remove('hidden');
+            setupOptions();
+            updateDisplay();
+        }
+
+        function setupOptions() {
+            const container = document.getElementById('hand-options');
+            container.innerHTML = moves.map(m => `
+                <button onclick="playTurn(${m.val})" class="hand-btn p-2 rounded-xl border border-white/10 hover:border-yellow-400">
+                    <span class="text-3xl block">${m.img}</span>
+                    <span class="text-xs font-bold">${m.val}</span>
+                </button>
+            `).join('');
+        }
+
+        function playTurn(userMove) {
+            if (isGameOver) return;
+
+            const cpuMoveObj = moves[Math.floor(Math.random() * moves.length)];
+            const cpuMove = cpuMoveObj.val;
+            
+            document.getElementById('user-move-img').innerText = moves.find(m => m.val === userMove).img;
+            document.getElementById('cpu-move-img').innerText = cpuMoveObj.img;
+
+            if (userMove === cpuMove) {
+                handleOut();
+            } else {
+                if (isUserBatting) {
+                    userScore += userMove;
+                    if (userScore > target) endGame();
+                } else {
+                    cpuScore += cpuMove;
+                    if (cpuScore > target) endGame();
+                }
+            }
+            updateDisplay();
+        }
+
+        function handleOut() {
+            alert("OUT!");
+            if (target === Infinity) {
+                target = isUserBatting ? userScore : cpuScore;
+                isUserBatting = !isUserBatting;
+                alert(`Target set: ${target + 1}. Switch sides!`);
+            } else {
+                endGame();
+            }
+        }
+
+        function updateDisplay() {
+            const currentScore = isUserBatting ? userScore : cpuScore;
+            document.getElementById('scoreboard').innerText = `Score: ${currentScore}`;
+            document.getElementById('game-status').innerText = isUserBatting ? "YOU ARE BATTING" : "CPU IS BATTING";
+            if (target !== Infinity) {
+                document.getElementById('turn-instruction').innerText = `Target: ${target + 1}`;
+            }
+        }
+
+        function endGame() {
+            isGameOver = true;
+            let msg = "";
+            if (userScore > cpuScore) msg = "YOU WIN!";
+            else if (cpuScore > userScore) msg = "CPU WINS!";
+            else msg = "IT'S A TIE!";
+            
+            document.getElementById('action-area').innerHTML = `
+                <h1 class="text-5xl title-font mb-4">${msg}</h1>
+                <p class="mb-6">Final Score - You: ${userScore} | CPU: ${cpuScore}</p>
+                <button onclick="location.reload()" class="bg-yellow-500 text-black px-10 py-4 rounded-full font-bold">REPLAY</button>
+            `;
+        }
+    </script>
+</body>
+  </html>
+  
