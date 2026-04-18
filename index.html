@@ -22,35 +22,35 @@
             font-family: 'Syncopate', sans-serif;
         }
 
-        /* Pitch Aesthetics */
+        /* Pitch Aesthetics - Fixed Layering */
         .cartoon-pitch {
             background: #4caf50;
             background-image: radial-gradient(#55bd59 20%, transparent 20%), radial-gradient(#55bd59 20%, transparent 20%);
             background-position: 0 0, 25px 25px;
             background-size: 50px 50px;
             position: relative;
+            z-index: 1;
         }
         .pitch-center {
             position: absolute; width: 35%; height: 100%; top: 0; left: 32.5%;
             background: #e3c191; border-left: 5px solid rgba(255,255,255,0.2); border-right: 5px solid rgba(255,255,255,0.2);
+            z-index: 2;
         }
 
-        /* UI Elements */
-        .hand-btn { transition: all 0.2s; background: rgba(0, 0, 0, 0.4); border: 2px solid rgba(255,255,255,0.1); }
-        .hand-btn:hover { transform: translateY(-5px); border-color: #ff7e00; background: rgba(255,126,0,0.2); }
+        /* Buttons forced to front */
+        .front-ui { position: relative; z-index: 50; }
+
+        .hand-btn { transition: all 0.2s; background: rgba(0, 0, 0, 0.6); border: 2px solid rgba(255,255,255,0.2); }
+        .hand-btn:hover { transform: translateY(-5px); border-color: #ff7e00; background: rgba(255,126,0,0.3); }
         
         #loading-screen {
             position: fixed; inset: 0; background: #000; z-index: 1000;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
 
-        /* Powerplay Glow */
-        .powerplay-mode { animation: pulse-red 1.5s infinite; }
-        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.4); } 70% { box-shadow: 0 0 0 20px rgba(255, 0, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); } }
-
         .ball {
             position: absolute; width: 25px; height: 25px; background: radial-gradient(circle at 30% 30%, #ff4d4d, #800000);
-            border-radius: 50%; opacity: 0; pointer-events: none; z-index: 50;
+            border-radius: 50%; opacity: 0; pointer-events: none; z-index: 60;
         }
     </style>
 </head>
@@ -59,7 +59,6 @@
     <audio id="bg-music" loop><source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3" type="audio/mpeg"></audio>
     <audio id="out-sfx"><source src="https://assets.mixkit.co/active_storage/sfx/2972/2972-preview.mp3" type="audio/mpeg"></audio>
     <audio id="crowd-sfx"><source src="https://assets.mixkit.co/active_storage/sfx/991/991-preview.mp3" type="audio/mpeg"></audio>
-    <audio id="start-sfx"><source src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3" type="audio/mpeg"></audio>
 
     <div id="loading-screen">
         <h1 class="gradient-title text-6xl mb-2 italic">CRICKET FINGERING</h1>
@@ -73,18 +72,18 @@
     <div id="name-modal" class="hidden fixed inset-0 bg-black/90 z-[500] flex items-center justify-center">
         <div class="bg-gray-900 p-8 rounded-3xl border-2 border-orange-500 text-center">
             <h2 class="text-2xl font-bold mb-4 text-orange-400">ENTER YOUR TEAM NAME</h2>
-            <input type="text" id="team-input" class="bg-black border border-gray-700 p-3 rounded-lg w-full text-white text-center mb-6 focus:outline-none focus:border-orange-500" placeholder="e.g. Lynx Warriors">
+            <input type="text" id="team-input" class="bg-black border border-gray-700 p-3 rounded-lg w-full text-white text-center mb-6 focus:outline-none focus:border-orange-500" placeholder="Team Name">
             <button onclick="saveTeamName()" class="bg-orange-500 px-8 py-2 rounded-full font-bold">LET'S PLAY</button>
         </div>
     </div>
 
     <div class="absolute top-0 w-full p-4 flex justify-between items-start z-50">
-        <div class="bg-black/60 p-3 rounded-xl border border-white/10">
+        <div class="bg-black/80 p-3 rounded-xl border border-white/20">
             <p id="display-team-name" class="text-orange-400 text-xs font-bold uppercase tracking-widest">TEAM</p>
             <h2 id="user-score-ui" class="text-4xl font-black">0</h2>
         </div>
         <div class="flex flex-col items-end gap-2">
-            <button onclick="toggleMusic()" class="bg-white/10 p-2 rounded-full hover:bg-white/20 transition">
+            <button onclick="toggleMusic()" class="bg-black/60 p-2 rounded-full border border-white/10">
                 <span id="music-icon" class="text-xl">🔊</span>
             </button>
             <div id="target-box" class="hidden bg-yellow-500 text-black px-4 py-1 rounded-lg font-bold">Target: 0</div>
@@ -93,38 +92,43 @@
 
     <div class="pitch-center"></div>
 
-    <div class="h-full flex flex-col pt-24">
+    <div class="h-full flex flex-col pt-24 front-ui">
         <div class="flex-1 flex flex-col items-center justify-center relative">
-            <div id="cpu-action-box" class="bg-black/40 backdrop-blur-sm p-4 rounded-2xl border border-white/5 text-center">
-                <p class="text-[10px] uppercase text-white/50 mb-1">Computer Move</p>
-                <div id="cpu-hand" class="text-6xl">🤖</div>
+            <div class="bg-black/60 p-4 rounded-2xl border border-orange-500/30 text-center">
+                <p class="text-[10px] uppercase text-white/50 mb-1">Devil's Move</p>
+                <div id="cpu-hand" class="text-6xl">😈</div>
             </div>
-            <div id="cpu-score-box" class="mt-4 text-white/40 font-bold">CPU: <span id="cpu-score-ui">0</span></div>
+            <div id="cpu-score-box" class="mt-4 text-white font-bold bg-black/40 px-4 py-1 rounded-full">CPU: <span id="cpu-score-ui">0</span></div>
         </div>
 
-        <div id="status-bar" class="h-12 bg-white/5 flex items-center justify-center border-y border-white/10">
-            <p id="game-info" class="font-bold text-sm tracking-tighter text-orange-200">WAITING FOR TOSS...</p>
+        <div id="status-bar" class="h-14 bg-black/60 flex items-center justify-center border-y border-white/10">
+            <p id="game-info" class="font-bold text-lg tracking-tight text-orange-400 italic uppercase">Waiting for Toss...</p>
         </div>
 
         <div class="flex-1 flex flex-col items-center justify-center pb-8 px-4">
             <div id="toss-area" class="text-center">
                 <div class="flex gap-4">
-                    <button onclick="runToss('Heads')" class="bg-orange-500 px-8 py-3 rounded-full font-black text-black shadow-lg">HEADS</button>
-                    <button onclick="runToss('Tails')" class="bg-white px-8 py-3 rounded-full font-black text-black shadow-lg">TAILS</button>
+                    <button onclick="runToss('Heads')" class="bg-orange-500 px-10 py-4 rounded-full font-black text-black shadow-2xl">HEADS</button>
+                    <button onclick="runToss('Tails')" class="bg-white px-10 py-4 rounded-full font-black text-black shadow-2xl">TAILS</button>
                 </div>
             </div>
 
             <div id="batting-area" class="hidden w-full max-w-md">
                 <div class="grid grid-cols-5 gap-2" id="moves-grid"></div>
             </div>
+
+            <div id="rematch-area" class="hidden text-center">
+                <h1 id="winner-text" class="text-5xl font-black gradient-title mb-6"></h1>
+                <button onclick="location.reload()" class="bg-orange-600 px-12 py-4 rounded-full font-black text-xl shadow-lg animate-pulse">REMATCH</button>
+            </div>
         </div>
     </div>
 
-    <div id="out-modal" class="hidden fixed inset-0 bg-black/80 z-[1000] flex items-center justify-center p-4">
+    <div id="out-modal" class="hidden fixed inset-0 bg-black/95 z-[1000] flex items-center justify-center p-4">
         <div class="bg-gray-900 border-t-8 border-orange-600 p-8 rounded-b-3xl text-center max-w-sm w-full">
             <h1 class="text-6xl font-black text-white mb-2 italic">OUT!</h1>
-            <p id="out-message" class="text-gray-400 mb-6 font-medium uppercase tracking-widest text-sm"></p>
-            <button onclick="closeOutModal()" class="w-full bg-orange-600 py-4 rounded-xl font-bold text-xl shadow-orange-900/50 shadow-lg">CONTINUE</button>
+            <p id="out-message" class="text-gray-400 mb-6 font-bold uppercase tracking-widest text-sm"></p>
+            <button onclick="closeOutModal()" class="w-full bg-orange-600 py-4 rounded-xl font-bold text-xl shadow-lg">CONTINUE</button>
         </div>
     </div>
 
@@ -144,34 +148,27 @@
             target: Infinity,
             isUserBatting: null,
             isGameOver: false,
-            musicOn: true,
-            powerplay: false
+            musicOn: true
         };
 
-        // --- Init Loading ---
         window.onload = () => {
-            let bar = document.getElementById('load-bar');
             let progress = 0;
+            let bar = document.getElementById('load-bar');
             let interval = setInterval(() => {
-                progress += Math.random() * 15;
-                bar.style.width = Math.min(progress, 100) + "%";
+                progress += 5;
+                bar.style.width = progress + "%";
                 if (progress >= 100) {
                     clearInterval(interval);
                     document.getElementById('start-btn').classList.remove('hidden');
                 }
-            }, 200);
+            }, 100);
         };
 
         document.getElementById('start-btn').onclick = () => {
             document.getElementById('loading-screen').style.display = 'none';
-            document.getElementById('start-sfx').play();
             if (state.musicOn) document.getElementById('bg-music').play();
-            
-            if (!state.teamName) {
-                document.getElementById('name-modal').classList.remove('hidden');
-            } else {
-                updateTeamDisplay();
-            }
+            if (!state.teamName) document.getElementById('name-modal').classList.remove('hidden');
+            else updateTeamDisplay();
         };
 
         function saveTeamName() {
@@ -184,28 +181,25 @@
             }
         }
 
-        function updateTeamDisplay() {
-            document.getElementById('display-team-name').innerText = state.teamName;
-        }
+        function updateTeamDisplay() { document.getElementById('display-team-name').innerText = state.teamName; }
 
         function toggleMusic() {
             state.musicOn = !state.musicOn;
             const music = document.getElementById('bg-music');
             const icon = document.getElementById('music-icon');
-            if (state.musicOn) { music.play(); icon.innerText = "🔊"; }
-            else { music.pause(); icon.innerText = "🔇"; icon.classList.add('opacity-50'); }
+            state.musicOn ? music.play() : music.pause();
+            icon.innerText = state.musicOn ? "🔊" : "🔇";
         }
 
-        // --- Toss ---
         function runToss(choice) {
             const coin = Math.random() < 0.5 ? 'Heads' : 'Tails';
             const won = choice === coin;
             document.getElementById('toss-area').innerHTML = won ? 
-                `<div class='flex gap-2'><button onclick='setPhase(true)' class='bg-green-500 px-6 py-2 rounded-full font-bold'>BAT</button>
-                 <button onclick='setPhase(false)' class='bg-blue-500 px-6 py-2 rounded-full font-bold'>BOWL</button></div>` :
-                `<button onclick='setPhase(${Math.random() < 0.5})' class='bg-orange-500 px-6 py-2 rounded-full font-bold'>CPU WON TOSS - CONTINUE</button>`;
+                `<div class='flex gap-4'><button onclick='setPhase(true)' class='bg-green-500 px-8 py-3 rounded-full font-bold text-black'>BAT FIRST</button>
+                 <button onclick='setPhase(false)' class='bg-blue-500 px-8 py-3 rounded-full font-bold text-white'>BOWL FIRST</button></div>` :
+                `<button onclick='setPhase(${Math.random() < 0.5})' class='bg-orange-500 px-8 py-3 rounded-full font-black text-black'>CONTINUE</button>`;
             
-            document.getElementById('game-info').innerText = `${coin}! ${won ? 'YOU WON THE TOSS' : 'CPU WON THE TOSS'}`;
+            document.getElementById('game-info').innerText = won ? "YOU WON THE TOSS!" : "CPU WON THE TOSS!";
         }
 
         function setPhase(batting) {
@@ -221,58 +215,29 @@
             grid.innerHTML = moves.map(m => `
                 <button onclick="playTurn(${m.val})" class="hand-btn p-3 rounded-xl">
                     <span class="text-3xl block">${m.img}</span>
-                    <span class="text-[10px] font-bold text-white/40">${m.val}</span>
+                    <span class="text-[10px] font-bold text-white/50">${m.val}</span>
                 </button>
             `).join('');
         }
 
-        // --- Play ---
         function playTurn(userMove) {
             if (state.isGameOver) return;
-            
-            // AI logic: High risk if score is high
-            const userMoveObj = moves.find(m => m.val === userMove);
-            const cpuMatches = Math.random() < (userMove > 10 ? 0.15 : 0.05); 
-            const cpuMoveObj = cpuMatches ? userMoveObj : moves[Math.floor(Math.random() * moves.length)];
-            const cpuMove = cpuMoveObj.val;
-
-            document.getElementById('cpu-hand').innerText = cpuMoveObj.img;
+            const cpuMove = moves[Math.floor(Math.random() * moves.length)].val;
+            document.getElementById('cpu-hand').innerText = moves.find(m => m.val === cpuMove).img;
 
             if (userMove === cpuMove) {
-                triggerOut();
+                document.getElementById('out-sfx').play();
+                const msg = state.isUserBatting ? "CPU matched your move!" : "You guessed the Devil's move!";
+                document.getElementById('out-message').innerText = msg;
+                document.getElementById('out-modal').classList.remove('hidden');
             } else {
-                let points = state.isUserBatting ? userMove : cpuMove;
-                
-                // Random Powerplay Thrill
-                if (!state.powerplay && Math.random() < 0.1) {
-                    state.powerplay = true;
-                    document.body.classList.add('powerplay-mode');
-                    document.getElementById('game-info').innerText = "POWERPLAY! DOUBLE RUNS!";
-                    setTimeout(() => { 
-                        state.powerplay = false; 
-                        document.body.classList.remove('powerplay-mode');
-                    }, 3000);
-                }
-
-                if (state.powerplay) points *= 2;
-                
-                if (state.isUserBatting) state.userScore += points;
-                else state.cpuScore += points;
-
-                if (points >= 6) document.getElementById('crowd-sfx').play();
-                animateBall(points);
+                let runs = state.isUserBatting ? userMove : cpuMove;
+                state.isUserBatting ? state.userScore += runs : state.cpuScore += runs;
+                if (runs >= 6) document.getElementById('crowd-sfx').play();
+                animateBall(runs);
                 updateUI();
-                checkWin();
+                checkTarget();
             }
-        }
-
-        function triggerOut() {
-            document.getElementById('out-sfx').play();
-            const msg = state.isUserBatting ? 
-                "CPU matched your move. Switching sides." : 
-                "You guessed computer's move. Switching sides";
-            document.getElementById('out-message').innerText = msg;
-            document.getElementById('out-modal').classList.remove('hidden');
         }
 
         function closeOutModal() {
@@ -291,14 +256,10 @@
         function animateBall(runs) {
             const ball = document.getElementById('ball');
             ball.style.opacity = "1";
-            ball.style.bottom = "20%";
-            ball.style.left = "50%";
-            
-            let height = runs >= 6 ? "-300px" : "-100px";
             ball.animate([
-                { transform: 'translate(0, 0) scale(1)', opacity: 1 },
-                { transform: `translate(${Math.random()*200 - 100}px, ${height}) scale(0.5)`, opacity: 0 }
-            ], { duration: 600, easing: 'ease-out' });
+                { transform: 'translate(-50%, 0) scale(1)', bottom: '20%', left: '50%', opacity: 1 },
+                { transform: `translate(-50%, -200px) scale(0.2)`, bottom: '60%', opacity: 0 }
+            ], { duration: 600 });
         }
 
         function updateUI() {
@@ -307,7 +268,7 @@
             document.getElementById('game-info').innerText = state.isUserBatting ? "YOU ARE BATTING" : "YOU ARE BOWLING";
         }
 
-        function checkWin() {
+        function checkTarget() {
             if (state.target !== Infinity) {
                 if (state.isUserBatting && state.userScore > state.target) endGame();
                 if (!state.isUserBatting && state.cpuScore > state.target) endGame();
@@ -316,13 +277,9 @@
 
         function endGame() {
             state.isGameOver = true;
-            const won = state.userScore > state.cpuScore;
-            document.getElementById('batting-area').innerHTML = `
-                <div class="text-center">
-                    <h1 class="text-4xl font-black gradient-title">${won ? 'VICTORY!' : 'DEFEAT!'}</h1>
-                    <button onclick="location.reload()" class="mt-4 bg-white text-black px-8 py-2 rounded-full font-bold">REPLAY</button>
-                </div>
-            `;
+            document.getElementById('batting-area').classList.add('hidden');
+            document.getElementById('rematch-area').classList.remove('hidden');
+            document.getElementById('winner-text').innerText = state.userScore > state.cpuScore ? "YOU WON!" : "CPU WON!";
         }
     </script>
 </body>
