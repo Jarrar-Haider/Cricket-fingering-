@@ -69,7 +69,7 @@
 
     <div id="loading-screen">
         <div class="text-center px-6">
-            <h1 class="gradient-title text-6xl italic">CRICKET<br>FINGERING</h1>
+            <h1 class="gradient-title text-6xl italic text-center uppercase">CRICKET<br>FINGERING</h1>
             <p class="text-white opacity-40 text-[10px] tracking-[0.5em] font-bold mt-2 uppercase">By Jarrar</p>
         </div>
         <div class="mt-12 w-48 h-1 bg-gray-900 rounded-full overflow-hidden">
@@ -83,23 +83,19 @@
             <div class="text-center mb-8">
                 <h2 class="text-orange-500 font-black italic text-2xl uppercase tracking-widest">SELECT LEVEL</h2>
             </div>
-
             <div class="space-y-4">
                 <div onclick="setDiff('easy', this)" class="diff-card p-4 rounded-2xl flex justify-between items-center interactive">
                     <div><h3 class="font-black uppercase text-sm text-white">Easy</h3><p class="text-[9px] text-white/40 uppercase">20% Catch Risk</p></div>
                     <span class="text-xl">🍃</span>
                 </div>
-
                 <div onclick="setDiff('normal', this)" class="diff-card active p-4 rounded-2xl flex justify-between items-center interactive">
                     <div><h3 class="font-black uppercase text-sm text-white">Normal</h3><p class="text-[9px] text-white/40 uppercase">Standard Play</p></div>
                     <span class="text-xl">⚡</span>
                 </div>
-
                 <div onclick="setDiff('hard', this)" class="diff-card p-4 rounded-2xl flex justify-between items-center interactive">
                     <div><h3 class="font-black uppercase text-sm text-white">Hard</h3><p class="text-[9px] text-white/40 uppercase">80% Catch Risk</p></div>
                     <span class="text-xl">🔥</span>
                 </div>
-
                 <button id="final-start" class="bg-orange-600 w-full py-5 rounded-2xl font-black text-white uppercase tracking-widest mt-4 shadow-xl interactive">Play Now</button>
             </div>
         </div>
@@ -112,7 +108,7 @@
             </div>
             <div class="flex justify-between items-center">
                 <div class="bg-black/80 p-3 rounded-2xl border border-white/10">
-                    <p class="text-orange-500 text-[10px] font-black uppercase">PLAYER</p>
+                    <p class="text-orange-500 text-[10px] font-black uppercase tracking-widest">SCORE</p>
                     <h2 id="user-score-ui" class="text-4xl font-black text-white">0</h2>
                 </div>
                 <button onclick="toggleMusic()" class="bg-black/80 p-4 rounded-full border border-white/10">
@@ -151,7 +147,7 @@
 
     <div id="out-modal" class="hidden fixed inset-0 bg-black/95 z-[700] flex items-center justify-center p-6">
         <div class="bg-gray-900 border border-orange-600/30 p-10 rounded-[3rem] text-center w-full max-w-xs">
-            <h1 class="text-7xl font-black text-white mb-2 italic">OUT</h1>
+            <h1 class="text-7xl font-black text-white mb-2 italic uppercase">OUT</h1>
             <p class="text-orange-500 mb-10 font-bold uppercase text-[10px]">Switching Sides</p>
             <button onclick="closeOutModal()" class="w-full bg-orange-600 py-5 rounded-2xl font-black text-lg text-white uppercase">Continue</button>
         </div>
@@ -168,7 +164,7 @@
         let state = { uScore: 0, cScore: 0, target: Infinity, isBatting: null, isMusic: true, difficulty: 'normal' };
         const aud = { bg: document.getElementById('bg-music'), out: document.getElementById('out-sfx') };
         
-        // Locked at 100% Volume
+        // FORCED 100% VOLUME
         aud.bg.volume = 1.0;
         aud.out.volume = 1.0;
 
@@ -180,12 +176,15 @@
             }, 30);
         };
 
-        // START BUTTON UNLOCKS AUDIO CONTEXT
+        // GLOBAL AUDIO UNLOCK: Tie play to the very first click
         document.getElementById('start-btn').onclick = () => {
             document.getElementById('loading-screen').remove();
             document.getElementById('setup-modal').classList.remove('hidden');
-            // Force play to initialize audio engine
-            if(state.isMusic) { aud.bg.play().catch(()=>{}); }
+            // Unlocks the audio engine for mobile browsers
+            if(state.isMusic) { 
+                aud.bg.play().catch(()=>{}); 
+                aud.out.play().then(() => { aud.out.pause(); aud.out.currentTime = 0; }).catch(()=>{});
+            }
         };
 
         function setDiff(d, el) {
@@ -197,8 +196,7 @@
         document.getElementById('final-start').onclick = () => {
             document.getElementById('setup-modal').classList.add('hidden');
             if(state.isMusic) { 
-                aud.bg.currentTime = 0;
-                aud.bg.play().catch(e => console.log("Music blocked, waiting for next tap"));
+                aud.bg.play().catch(() => console.log("Audio waiting for interaction"));
             }
         };
 
@@ -245,16 +243,14 @@
 
             if (uMove === cMove) {
                 if(state.isMusic) { 
-                    aud.out.currentTime = 0; // RESET TIMER
+                    aud.out.currentTime = 0; 
                     aud.out.play(); 
                 }
                 document.getElementById('out-modal').classList.remove('hidden');
             } else {
                 let r = state.isBatting ? uMove : cMove;
                 state.isBatting ? state.uScore += r : state.cScore += r;
-                ballHit(); 
-                updateUI(); 
-                checkWin();
+                ballHit(); updateUI(); checkWin();
             }
         }
 
@@ -305,4 +301,5 @@
         }
     </script>
 </body>
-</html>
+    </html>
+    
