@@ -64,7 +64,7 @@
 <body class="cartoon-pitch">
     <div class="pitch-center"></div>
 
-    <audio id="bg-music" loop src="https://codeskulptor-demos.commondatastorage.googleapis.com/pang/pman_ow.mp3"></audio>
+    <audio id="bg-music" loop src="https://codeskulptor-demos.commondatastorage.googleapis.com/GalaxyInvaders/theme.mp3"></audio>
     <audio id="out-sfx" src="https://codeskulptor-demos.commondatastorage.googleapis.com/descent/Crumble%20Sound.mp3"></audio>
 
     <div id="loading-screen">
@@ -164,7 +164,6 @@
         let state = { uScore: 0, cScore: 0, target: Infinity, isBatting: null, isMusic: true, difficulty: 'normal' };
         const aud = { bg: document.getElementById('bg-music'), out: document.getElementById('out-sfx') };
         
-        // 100% Volume
         aud.bg.volume = 1.0;
         aud.out.volume = 1.0;
 
@@ -179,6 +178,7 @@
         document.getElementById('start-btn').onclick = () => {
             document.getElementById('loading-screen').remove();
             document.getElementById('setup-modal').classList.remove('hidden');
+            if(state.isMusic) { aud.bg.play().catch(()=>{}); }
         };
 
         function setDiff(d, el) {
@@ -189,9 +189,7 @@
 
         document.getElementById('final-start').onclick = () => {
             document.getElementById('setup-modal').classList.add('hidden');
-            if(state.isMusic) {
-                aud.bg.play().catch(e => console.error("Audio failed:", e));
-            }
+            if(state.isMusic) { aud.bg.play().catch(()=>{}); }
         };
 
         function toggleMusic() {
@@ -236,7 +234,6 @@
             document.getElementById('cpu-hand').innerText = moves.find(m => m.val === cMove).img;
 
             if (uMove === cMove) {
-                // FORCED OUT SFX TRIGGER
                 if(state.isMusic) { 
                     aud.out.currentTime = 0; 
                     aud.out.play(); 
