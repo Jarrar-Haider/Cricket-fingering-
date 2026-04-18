@@ -16,100 +16,119 @@
             font-family: 'Bungee', cursive;
         }
 
-        /* Fixed Title Scaling for Mobile */
-        .title-container { width: 90%; max-width: 400px; text-align: center; }
-        .title-main { font-size: clamp(2.5rem, 10vw, 4rem); line-height: 1; margin-bottom: 0.5rem; }
-
         .cartoon-pitch {
             background: #4caf50;
             background-image: radial-gradient(#55bd59 20%, transparent 20%), radial-gradient(#55bd59 20%, transparent 20%);
             background-position: 0 0, 25px 25px;
             background-size: 50px 50px;
-            position: relative;
+            position: fixed; inset: 0; z-index: 0;
         }
 
         .pitch-center {
             position: absolute; width: 35%; height: 100%; top: 0; left: 32.5%;
             background: #e3c191; border-left: 5px solid rgba(255,255,255,0.2); border-right: 5px solid rgba(255,255,255,0.2);
+            z-index: 1;
         }
 
-        .front-ui { position: relative; z-index: 100; height: 100%; display: flex; flex-direction: column; }
-        .hand-btn { transition: all 0.2s; background: rgba(0, 0, 0, 0.85); border: 2px solid rgba(255,126,0,0.4); border-radius: 10px; }
+        .front-ui { position: relative; z-index: 50; height: 100vh; display: flex; flex-direction: column; pointer-events: none; }
+        .interactive { pointer-events: auto; }
+
+        .hand-btn { transition: all 0.2s; background: rgba(0, 0, 0, 0.9); border: 2px solid #ff7e00; border-radius: 12px; }
         
         #loading-screen {
-            position: fixed; inset: 0; background: #000; z-index: 2000;
+            position: fixed; inset: 0; background: #000; z-index: 1000;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
 
         .ball {
-            position: absolute; width: 22px; height: 22px; background: radial-gradient(circle at 30% 30%, #ff4d4d, #800000);
-            border-radius: 50%; opacity: 0; pointer-events: none; z-index: 80;
+            position: absolute; width: 20px; height: 20px; background: #ff4d4d;
+            border-radius: 50%; opacity: 0; z-index: 40;
         }
+
+        .title-main { font-size: clamp(2rem, 11vw, 3.8rem); line-height: 1; }
     </style>
 </head>
 <body class="cartoon-pitch">
+    <div class="pitch-center"></div>
 
     <audio id="bg-music" loop src="https://codeskulptor-demos.commondatastorage.googleapis.com/pang/pman_ow.mp3"></audio>
     <audio id="out-sfx" src="https://codeskulptor-demos.commondatastorage.googleapis.com/descent/Crumble%20Sound.mp3"></audio>
-    <audio id="cheer-sfx" src="https://codeskulptor-demos.commondatastorage.googleapis.com/descent/GotItem.mp3"></audio>
+    <audio id="money-sfx" src="https://codeskulptor-demos.commondatastorage.googleapis.com/descent/GotItem.mp3"></audio>
 
     <div id="loading-screen">
-        <div class="title-container">
+        <div class="text-center px-6">
             <h1 class="gradient-title title-main italic">CRICKET<br>FINGERING</h1>
-            <h2 class="text-white opacity-40 tracking-[0.3em] text-[10px] uppercase font-bold">BY JARRAR</h2>
+            <p class="text-white opacity-40 text-[10px] tracking-[0.4em] font-bold mt-2">BY JARRAR</p>
         </div>
-        <div class="mt-10 w-48 h-1 bg-gray-900 rounded-full overflow-hidden">
-            <div id="load-bar" class="h-full bg-orange-600 w-0 transition-all duration-300"></div>
+        <div class="mt-10 w-40 h-1 bg-gray-900 rounded-full overflow-hidden">
+            <div id="load-bar" class="h-full bg-orange-600 w-0"></div>
         </div>
-        <button id="start-btn" class="hidden mt-8 px-12 py-4 bg-orange-600 text-white font-black rounded-full shadow-2xl animate-pulse">START MATCH</button>
+        <button id="start-btn" class="hidden mt-8 px-12 py-4 bg-orange-600 text-white font-black rounded-full shadow-2xl animate-pulse">START GAME</button>
+    </div>
+
+    <div id="name-modal" class="hidden fixed inset-0 bg-black/95 z-[600] flex items-center justify-center p-6">
+        <div class="bg-gray-900 border-2 border-orange-500 p-8 rounded-3xl text-center w-full max-w-sm">
+            <h2 class="text-xl font-bold mb-4 text-orange-400">TEAM NAME</h2>
+            <input type="text" id="team-input" class="bg-black border border-gray-700 p-4 rounded-xl w-full text-white text-center mb-6" placeholder="Enter Team Name">
+            <button onclick="saveTeamName()" class="bg-orange-600 w-full py-3 rounded-xl font-bold text-white uppercase">Let's Play</button>
+        </div>
+    </div>
+
+    <div id="feedback-modal" class="hidden fixed inset-0 bg-black/98 z-[800] flex items-center justify-center p-6">
+        <div class="bg-gray-900 border-2 border-yellow-500 p-8 rounded-3xl text-center w-full max-w-sm">
+            <p class="text-white font-bold text-lg leading-relaxed">"Ab isko ghuma k apni bund m dal do"</p>
+            <button onclick="document.getElementById('feedback-modal').classList.add('hidden')" class="mt-6 bg-yellow-500 px-8 py-2 rounded-full font-bold text-black uppercase">Close</button>
+        </div>
     </div>
 
     <div class="front-ui">
-        <div class="p-4 flex justify-between items-start">
+        <div class="p-4 flex justify-between items-start interactive">
             <div class="bg-black/90 p-3 rounded-xl border-2 border-orange-500">
                 <p id="display-team-name" class="text-orange-400 text-[10px] font-black uppercase">TEAM</p>
-                <h2 id="user-score-ui" class="text-4xl font-black text-white">0</h2>
+                <h2 id="user-score-ui" class="text-4xl font-black text-white leading-none">0</h2>
             </div>
-            <button onclick="toggleMusic()" class="bg-black/90 p-3 rounded-full border border-white/20">
-                <span id="music-icon" class="text-xl">🔊</span>
-            </button>
+            <div class="flex flex-col gap-2">
+                <button onclick="toggleMusic()" class="bg-black/90 p-3 rounded-full border border-white/20 shadow-lg">
+                    <span id="music-icon" class="text-xl">🔊</span>
+                </button>
+                <button onclick="triggerFeedback()" class="bg-black/90 p-3 rounded-full border border-white/20 shadow-lg">
+                    <span class="text-xl">💬</span>
+                </button>
+            </div>
         </div>
 
-        <div class="pitch-center"></div>
         <div id="ball" class="ball"></div>
 
-        <div class="flex-1 flex flex-col items-center justify-between pb-6">
+        <div class="flex-1 flex flex-col items-center justify-between pb-8">
             <div class="mt-2 text-center">
-                <div class="bg-black/80 p-4 rounded-3xl border-2 border-red-600 shadow-xl">
+                <div class="bg-black/90 p-5 rounded-3xl border-2 border-red-600 shadow-xl">
                     <div id="cpu-hand" class="text-6xl">😈</div>
                 </div>
-                <div id="target-box" class="hidden mt-2 bg-yellow-400 text-black px-3 py-0.5 rounded-full font-black text-[10px]">TARGET: 0</div>
+                <div id="target-box" class="hidden mt-3 bg-yellow-400 text-black px-4 py-1 rounded-full font-black text-xs">TARGET: 0</div>
             </div>
 
-            <div id="status-bar" class="w-full bg-black/80 py-3 border-y border-orange-500/50 text-center">
+            <div id="status-bar" class="w-full bg-black/90 py-4 border-y border-orange-500/50 text-center interactive">
                 <p id="game-info" class="font-black text-lg text-orange-400 italic uppercase">Waiting for Toss...</p>
             </div>
 
-            <div class="w-full max-w-sm px-4">
-                <div id="toss-area" class="flex gap-3 justify-center">
-                    <button onclick="runToss('Heads')" class="bg-orange-600 px-8 py-3 rounded-full font-black text-white">HEADS</button>
-                    <button onclick="runToss('Tails')" class="bg-white px-8 py-3 rounded-full font-black text-black">TAILS</button>
+            <div class="w-full max-w-sm px-4 interactive">
+                <div id="toss-area" class="flex gap-4 justify-center">
+                    <button onclick="runToss('Heads')" class="bg-orange-600 px-8 py-4 rounded-full font-black text-white">HEADS</button>
+                    <button onclick="runToss('Tails')" class="bg-white px-8 py-4 rounded-full font-black text-black">TAILS</button>
                 </div>
-
-                <div id="batting-area" class="hidden grid grid-cols-5 gap-1.5"></div>
-
+                <div id="batting-area" class="hidden grid grid-cols-5 gap-2"></div>
                 <div id="rematch-area" class="hidden text-center">
-                    <h1 id="winner-text" class="text-4xl font-black text-white mb-4 italic"></h1>
-                    <button onclick="location.reload()" class="bg-orange-600 px-10 py-3 rounded-full font-black text-white">REMATCH</button>
+                    <h1 id="winner-text" class="text-4xl font-black text-white mb-6 italic"></h1>
+                    <button onclick="location.reload()" class="bg-orange-600 px-12 py-4 rounded-full font-black text-white">REMATCH</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="out-modal" class="hidden fixed inset-0 bg-black/98 z-[500] flex items-center justify-center p-6">
+    <div id="out-modal" class="hidden fixed inset-0 bg-black/98 z-[700] flex items-center justify-center p-6">
         <div class="bg-gray-900 border-4 border-orange-600 p-8 rounded-[2rem] text-center w-full max-w-xs shadow-2xl">
             <h1 class="text-6xl font-black text-white mb-2 italic">OUT!</h1>
-            <p id="out-message" class="text-orange-400 mb-6 font-black uppercase text-xs"></p>
+            <p id="out-message" class="text-orange-400 mb-8 font-black uppercase text-xs"></p>
             <button onclick="closeOutModal()" class="w-full bg-orange-600 py-4 rounded-xl font-black text-xl text-white uppercase">Continue</button>
         </div>
     </div>
@@ -119,40 +138,39 @@
             { val: 1, img: "☝️" }, { val: 2, img: "✌️" }, { val: 3, img: "🤟" },
             { val: 4, img: "🖖" }, { val: 5, img: "🖐️" }, { val: 6, img: "👍" },
             { val: 10, img: "✊" }, { val: 20, img: "👎" }, { val: 50, img: "🤙" },
-            { val: 100, img: "👆🏻" } // Fixed 100 move
+            { val: 100, img: "👆🏻" }
         ];
 
-        let state = {
-            team: localStorage.getItem('teamJarrar') || "PLAYER 1",
-            uScore: 0, cScore: 0, target: Infinity,
-            isBatting: null, isMusic: true
-        };
-
-        const aud = {
-            bg: document.getElementById('bg-music'),
-            out: document.getElementById('out-sfx'),
-            cheer: document.getElementById('cheer-sfx')
-        };
-
-        function stopAllSfx() {
-            aud.out.pause(); aud.out.currentTime = 0;
-            aud.cheer.pause(); aud.cheer.currentTime = 0;
-        }
+        let state = { team: "", uScore: 0, cScore: 0, target: Infinity, isBatting: null, isMusic: true };
+        const aud = { bg: document.getElementById('bg-music'), out: document.getElementById('out-sfx'), money: document.getElementById('money-sfx') };
 
         window.onload = () => {
             let p = 0;
-            let bar = document.getElementById('load-bar');
             let itv = setInterval(() => {
-                p += 20; bar.style.width = p + "%";
+                p += 25; document.getElementById('load-bar').style.width = p + "%";
                 if(p >= 100) { clearInterval(itv); document.getElementById('start-btn').classList.remove('hidden'); }
-            }, 50);
+            }, 60);
         };
 
         document.getElementById('start-btn').onclick = () => {
             document.getElementById('loading-screen').remove();
+            document.getElementById('name-modal').classList.remove('hidden');
             if(state.isMusic) aud.bg.play().catch(()=>{});
-            document.getElementById('display-team-name').innerText = state.team;
         };
+
+        function saveTeamName() {
+            const val = document.getElementById('team-input').value.trim();
+            if(val) {
+                state.team = val;
+                document.getElementById('display-team-name').innerText = state.team;
+                document.getElementById('name-modal').classList.add('hidden');
+            }
+        }
+
+        function triggerFeedback() {
+            if(state.isMusic) { aud.money.currentTime = 0; aud.money.play(); }
+            document.getElementById('feedback-modal').classList.remove('hidden');
+        }
 
         function toggleMusic() {
             state.isMusic = !state.isMusic;
@@ -161,12 +179,11 @@
         }
 
         function runToss(choice) {
-            const coin = Math.random() < 0.5 ? 'Heads' : 'Tails';
-            const won = choice === coin;
+            const won = Math.random() < 0.5;
             document.getElementById('toss-area').innerHTML = won ? 
-                `<button onclick='setPhase(true)' class='bg-green-600 px-6 py-2 rounded-full font-black text-white text-xs'>BAT FIRST</button>
-                 <button onclick='setPhase(false)' class='bg-blue-600 px-6 py-2 rounded-full font-black text-white text-xs'>BOWL FIRST</button>` :
-                `<button onclick='setPhase(${Math.random() < 0.5})' class='bg-orange-600 px-8 py-2 rounded-full font-black text-white'>CONTINUE</button>`;
+                `<button onclick='setPhase(true)' class='bg-green-600 px-6 py-3 rounded-full font-black text-white text-xs'>BAT FIRST</button>
+                 <button onclick='setPhase(false)' class='bg-blue-600 px-6 py-3 rounded-full font-black text-white text-xs'>BOWL FIRST</button>` :
+                `<button onclick='setPhase(${Math.random() < 0.5})' class='bg-orange-600 px-10 py-3 rounded-full font-black text-white'>CONTINUE</button>`;
             document.getElementById('game-info').innerText = won ? "YOU WON TOSS!" : "CPU WON TOSS!";
         }
 
@@ -174,17 +191,13 @@
             state.isBatting = b;
             document.getElementById('toss-area').classList.add('hidden');
             document.getElementById('batting-area').classList.remove('hidden');
-            renderMoves();
-            updateUI();
-        }
-
-        function renderMoves() {
             document.getElementById('batting-area').innerHTML = moves.map(m => `
-                <button onclick="playTurn(${m.val})" class="hand-btn py-2">
-                    <span class="text-2xl block">${m.img}</span>
-                    <span class="text-[8px] font-black text-orange-500">${m.val}</span>
+                <button onclick="playTurn(${m.val})" class="hand-btn py-3">
+                    <span class="text-3xl block">${m.img}</span>
+                    <span class="text-[9px] font-black text-orange-500">${m.val}</span>
                 </button>
             `).join('');
+            updateUI();
         }
 
         function playTurn(uMove) {
@@ -192,13 +205,12 @@
             document.getElementById('cpu-hand').innerText = moves.find(m => m.val === cMove).img;
 
             if (uMove === cMove) {
-                stopAllSfx(); if(state.isMusic) aud.out.play();
+                if(state.isMusic) { aud.out.currentTime = 0; aud.out.play(); }
                 document.getElementById('out-message').innerHTML = "MATCHED! SWITCHING SIDES";
                 document.getElementById('out-modal').classList.remove('hidden');
             } else {
                 let r = state.isBatting ? uMove : cMove;
                 state.isBatting ? state.uScore += r : state.cScore += r;
-                if(r >= 50 && state.isMusic) { stopAllSfx(); aud.cheer.play(); }
                 ballHit(); updateUI(); checkWin();
             }
         }
@@ -206,10 +218,7 @@
         function ballHit() {
             const b = document.getElementById('ball');
             b.style.opacity = "1";
-            b.animate([
-                { transform: 'translate(-50%, 0)', bottom: '20%', left: '50%', opacity: 1 },
-                { transform: 'translate(-50%, -250px) scale(0)', bottom: '70%', opacity: 0 }
-            ], { duration: 400 });
+            b.animate([{ bottom: '20%', left: '50%', opacity: 1 }, { transform: 'scale(0)', bottom: '80%', opacity: 0 }], { duration: 400 });
         }
 
         function closeOutModal() {
@@ -238,8 +247,7 @@
         function endGame() {
             document.getElementById('batting-area').classList.add('hidden');
             document.getElementById('rematch-area').classList.remove('hidden');
-            const won = state.uScore > state.cScore;
-            document.getElementById('winner-text').innerText = won ? "VICTORY!" : "LOST!";
+            document.getElementById('winner-text').innerText = state.uScore > state.cScore ? "VICTORY!" : "LOST!";
         }
     </script>
 </body>
